@@ -1,7 +1,7 @@
-import axios from 'axios';
-import { StoredFile, StorageStats } from '../types/file';
+import axios from "axios";
+import { StoredFile, StorageStats } from "../types/file";
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
 
 export interface FileFilters {
   search?: string;
@@ -23,11 +23,11 @@ export const fileService = {
    */
   async uploadFile(file: globalThis.File): Promise<StoredFile> {
     const formData = new FormData();
-    formData.append('file', file, file.name);
+    formData.append("file", file, file.name);
 
     const response = await axios.post(`${API_URL}/files/`, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        "Content-Type": "multipart/form-data",
       },
     });
     return response.data;
@@ -35,31 +35,33 @@ export const fileService = {
 
   async getFiles(filters?: FileFilters): Promise<StoredFile[]> {
     const params = new URLSearchParams();
-    
+
     if (filters?.search) {
-      params.append('search', filters.search);
+      params.append("search", filters.search);
     }
     if (filters?.file_type) {
-      params.append('file_type', filters.file_type);
+      params.append("file_type", filters.file_type);
     }
     if (filters?.min_size) {
       // Convert KB to bytes for backend
-      params.append('min_size', (filters.min_size * 1024).toString());
+      params.append("min_size", (filters.min_size * 1024).toString());
     }
     if (filters?.max_size) {
       // Convert KB to bytes for backend
-      params.append('max_size', (filters.max_size * 1024).toString());
+      params.append("max_size", (filters.max_size * 1024).toString());
     }
     if (filters?.start_date) {
-      params.append('start_date', filters.start_date);
+      params.append("start_date", filters.start_date);
     }
     if (filters?.end_date) {
-      params.append('end_date', filters.end_date);
+      params.append("end_date", filters.end_date);
     }
 
     const queryString = params.toString();
-    const url = queryString ? `${API_URL}/files/?${queryString}` : `${API_URL}/files/`;
-    
+    const url = queryString
+      ? `${API_URL}/files/?${queryString}`
+      : `${API_URL}/files/`;
+
     const response = await axios.get(url);
     return response.data;
   },
@@ -76,12 +78,12 @@ export const fileService = {
   async downloadFile(fileUrl: string, filename: string): Promise<void> {
     try {
       const response = await axios.get(fileUrl, {
-        responseType: 'blob',
+        responseType: "blob",
       });
-      
+
       const blob = new Blob([response.data]);
       const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = filename;
       document.body.appendChild(link);
@@ -89,8 +91,8 @@ export const fileService = {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('Download error:', error);
-      throw new Error('Failed to download file');
+      console.error("Download error:", error);
+      throw new Error("Failed to download file");
     }
   },
 };

@@ -1,8 +1,8 @@
 // src/components/FileUpload.tsx
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from "react";
+import axios from "axios";
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
 
 interface FileUploadProps {
   onUploadSuccess: () => void;
@@ -10,9 +10,14 @@ interface FileUploadProps {
 
 export const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess }) => {
   const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' | 'info' } | null>(null);
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "success" | "error" | "info";
+  } | null>(null);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -20,12 +25,12 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess }) => {
     setMessage(null);
 
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append("file", file);
 
     try {
       const response = await axios.post(`${API_URL}/files/`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
       });
 
@@ -35,21 +40,21 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess }) => {
       if (isDuplicate) {
         setMessage({
           text: `🔄 Duplicate detected! Saved ${formatBytes(storageSaved)} of storage.`,
-          type: 'info',
+          type: "info",
         });
       } else {
         setMessage({
-          text: '✅ File uploaded successfully!',
-          type: 'success',
+          text: "✅ File uploaded successfully!",
+          type: "success",
         });
       }
 
       onUploadSuccess();
-      event.target.value = '';
+      event.target.value = "";
     } catch (error: any) {
       setMessage({
-        text: error.response?.data?.error || '❌ Error uploading file',
-        type: 'error',
+        text: error.response?.data?.error || "❌ Error uploading file",
+        type: "error",
       });
     } finally {
       setUploading(false);
@@ -57,17 +62,17 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess }) => {
   };
 
   const formatBytes = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return "0 Bytes";
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   return (
     <div className="p-6">
       <h2 className="text-xl font-semibold mb-4">Upload File</h2>
-      
+
       <div className="flex items-center justify-center w-full">
         <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 border-gray-300">
           <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -86,7 +91,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess }) => {
             </svg>
             <p className="mb-2 text-sm text-gray-500">
               <span className="font-semibold">
-                {uploading ? 'Uploading...' : 'Click to upload'}
+                {uploading ? "Uploading..." : "Click to upload"}
               </span>
             </p>
             <p className="text-xs text-gray-500">Any file type</p>
@@ -103,11 +108,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess }) => {
       {message && (
         <div
           className={`mt-4 p-4 rounded-lg ${
-            message.type === 'success'
-              ? 'bg-green-50 text-green-800 border border-green-200'
-              : message.type === 'error'
-              ? 'bg-red-50 text-red-800 border border-red-200'
-              : 'bg-blue-50 text-blue-800 border border-blue-200'
+            message.type === "success"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : message.type === "error"
+                ? "bg-red-50 text-red-800 border border-red-200"
+                : "bg-blue-50 text-blue-800 border border-blue-200"
           }`}
         >
           {message.text}

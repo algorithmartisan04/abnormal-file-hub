@@ -21,6 +21,7 @@ React-based frontend for the File Hub application, built with TypeScript and mod
 ### Local Development
 
 1. **Install Dependencies**
+
    ```bash
    npm install
    ```
