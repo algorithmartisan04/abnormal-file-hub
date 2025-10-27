@@ -6,6 +6,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      - ./backend:/app              # ✅ Mount local backend code into the container
       - backend_storage:/app/media
       - backend_static:/app/staticfiles
       - backend_data:/app/data
@@ -29,4 +30,4 @@ services:
 volumes:
   backend_storage:
   backend_static:
-  backend_data: 
+  backend_data:

@@ -1,16 +1,39 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { fileService } from '../services/fileService';
 import { StoredFile, StorageStats } from '../types/file';
 import { DocumentIcon, TrashIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { SearchFilters, FilterState } from './SearchFilters';
 
 export const FileList: React.FC = () => {
   const queryClient = useQueryClient();
+  
+  // Filter state
+  const [filters, setFilters] = useState<FilterState>({
+    search: '',
+    fileType: '',
+    minSize: '',
+    maxSize: '',
+    startDate: '',
+    endDate: '',
+  });
 
-  // Query for fetching files
+  // Convert FilterState to API filters
+  const getApiFilters = () => {
+    return {
+      search: filters.search || undefined,
+      file_type: filters.fileType || undefined,
+      min_size: filters.minSize ? parseFloat(filters.minSize) : undefined,
+      max_size: filters.maxSize ? parseFloat(filters.maxSize) : undefined,
+      start_date: filters.startDate || undefined,
+      end_date: filters.endDate || undefined,
+    };
+  };
+
+  // Query for fetching files with filters
   const { data: files, isLoading, error } = useQuery<StoredFile[]>({
-    queryKey: ['files'],
-    queryFn: fileService.getFiles,
+    queryKey: ['files', filters],
+    queryFn: () => fileService.getFiles(getApiFilters()),
   });
 
   // Query for fetching storage stats
@@ -18,7 +41,6 @@ export const FileList: React.FC = () => {
     queryKey: ['storage-stats'],
     queryFn: fileService.getStorageStats,
   });
-
 
   // Mutation for deleting files
   const deleteMutation = useMutation({
@@ -51,6 +73,17 @@ export const FileList: React.FC = () => {
     } catch (err) {
       console.error('Download error:', err);
     }
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      search: '',
+      fileType: '',
+      minSize: '',
+      maxSize: '',
+      startDate: '',
+      endDate: '',
+    });
   };
 
   const formatBytes = (bytes: number) => {
@@ -133,17 +166,29 @@ export const FileList: React.FC = () => {
         </div>
       )}
 
+      {/* Search and Filter Component */}
+      <SearchFilters
+        filters={filters}
+        onFilterChange={setFilters}
+        onClearFilters={handleClearFilters}
+      />
+
       {/* Files List */}
       {!files || files.length === 0 ? (
         <div className="text-center py-12">
           <DocumentIcon className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No files</h3>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No files found</h3>
           <p className="mt-1 text-sm text-gray-500">
-            Get started by uploading a file
+            {Object.values(filters).some(v => v !== '') 
+              ? 'Try adjusting your filters'
+              : 'Get started by uploading a file'}
           </p>
         </div>
       ) : (
         <div className="mt-6 flow-root">
+          <div className="mb-2 text-sm text-gray-600">
+            Showing {files.length} file{files.length !== 1 ? 's' : ''}
+          </div>
           <ul className="-my-5 divide-y divide-gray-200">
             {files.map((file) => (
               <li 

@@ -32,8 +32,17 @@ class File(models.Model):
             models.Index(fields=['file_hash']),
             models.Index(fields=['file_type']),
             models.Index(fields=['uploaded_at']),
+            models.Index(fields=['file_hash', 'file_type']),
         ]
     
+    def save(self, *args, **kwargs):
+        # Automatically detect file type if missing
+        if not self.file_type and self.file:
+            import mimetypes
+            type_guess, _ = mimetypes.guess_type(self.file.name)
+            self.file_type = type_guess or 'application/octet-stream'
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.original_filename
 

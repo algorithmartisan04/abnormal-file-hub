@@ -12,10 +12,12 @@ class FileReferenceSerializer(serializers.ModelSerializer):
     file_type = serializers.CharField(source='file.file_type', read_only=True)
     size = serializers.IntegerField(source='file.size', read_only=True)
     file_hash = serializers.CharField(source='file.file_hash', read_only=True)
+    message = serializers.CharField(read_only=True)
+    filename = serializers.SerializerMethodField()
     
     class Meta:
         model = FileReference
-        fields = ['id', 'original_filename', 'uploaded_at', 'is_duplicate', 'file_url', 'file_type', 'size', 'file_hash']
+        fields = ['id', 'filename', 'original_filename', 'uploaded_at', 'is_duplicate', 'file_url', 'file_type', 'size', 'file_hash', 'message']
         read_only_fields = ['id', 'uploaded_at', 'is_duplicate']
     
     def get_file_url(self, obj):
@@ -25,6 +27,13 @@ class FileReferenceSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.file.file.url)
             return obj.file.file.url
         return None
+
+    def get_filename(self, obj):
+        # Try to use file.original_filename if it exists
+        if hasattr(obj.file, 'original_filename') and obj.file.original_filename:
+            return obj.file.original_filename
+        # Fallback to FileReference.original_filename
+        return obj.original_filename or ''
 
 class StorageStatsSerializer(serializers.Serializer):
     total_files = serializers.IntegerField()

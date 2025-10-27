@@ -119,3 +119,38 @@ class FileViewSet(viewsets.ModelViewSet):
         """Get list of unique file types for filtering"""
         file_types = File.objects.values_list('file_type', flat=True).distinct()
         return Response({'file_types': list(file_types)})
+    
+    def get_queryset(self):
+        qs = FileReference.objects.all().select_related('file')
+
+        # --- Search by filename ---
+        search = self.request.query_params.get('search') or self.request.query_params.get('filename')
+        if search:
+            from django.db.models import Q
+            qs = qs.filter(
+                Q(original_filename__icontains=search) |
+                Q(file__original_filename__icontains=search)
+            )
+
+        # --- Filter by file type ---
+        file_type = self.request.query_params.get('file_type') or self.request.query_params.get('type')
+        if file_type:
+            qs = qs.filter(file__file_type__icontains=file_type)
+
+        # --- Filter by size range ---
+        min_size = self.request.query_params.get('min_size')
+        max_size = self.request.query_params.get('max_size')
+        if min_size:
+            qs = qs.filter(file__size__gte=min_size)
+        if max_size:
+            qs = qs.filter(file__size__lte=max_size)
+
+        # --- Filter by upload date ---
+        start_date = self.request.query_params.get('start_date')
+        end_date = self.request.query_params.get('end_date')
+        if start_date:
+            qs = qs.filter(file__uploaded_at__gte=start_date)
+        if end_date:
+            qs = qs.filter(file__uploaded_at__lte=end_date)
+
+        return qs
